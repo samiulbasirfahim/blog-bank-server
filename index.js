@@ -53,12 +53,36 @@ const runMongo = async () => {
 			res.send(result)
 		})
 		//  get one post by id
-		app.get('/post/:id', async (req, res) => {
+		app.get("/post/:id", async (req, res) => {
 			const postId = req.params.id
-			const query = {_id: ObjectId(postId)}
+			const query = { _id: ObjectId(postId) }
 			const result = await postCollection.findOne(query)
 			res.send(result)
 		})
+		// update a post
+		app.put("/updatePost/:id", verifyToken, async (req, res) => {
+			const postId = req.params.id
+			const query = { _id: ObjectId(postId) }
+			const post = await postCollection.findOne(query)
+			const postDetails = req.body.postBody
+			if (post.author === req.tokenEmail) {
+				const options = { upsert: true }
+				const updatedDoc = {
+					$set: {
+						...postDetails
+					},
+				}
+				const result = await postCollection.updateOne(
+					query,
+					updatedDoc,
+					options
+				)
+				res.send(result)
+			} else {
+				res.status(404).send("Forbidden")
+			}
+		})
+
 		// create a new post
 		app.post("/post", verifyToken, async (req, res) => {
 			const body = req.body
@@ -97,11 +121,11 @@ const runMongo = async () => {
 			const id = req.params.id
 			const query = { _id: ObjectId(id) }
 			const post = await postCollection.findOne(query)
-			if(post?.author === verifiedEmail){
+			if (post?.author === verifiedEmail) {
 				const result = await postCollection.deleteOne(query)
 				res.send(result)
 			} else {
-				res.status(404).send('forbidden')
+				res.status(404).send("forbidden")
 			}
 		})
 	} finally {
