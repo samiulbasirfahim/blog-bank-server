@@ -18,6 +18,7 @@ const verifyToken = async (req, res, next) => {
 			res.status(401).send({ message: "authentication failed" })
 		} else {
 			req.tokenEmail = decoded.email
+
 			next()
 		}
 	})
@@ -25,7 +26,6 @@ const verifyToken = async (req, res, next) => {
 // json web token generator for authentication
 app.post("/getToken", (req, res) => {
 	const email = req.body.email
-	console.log(email)
 	const token = jwt.sign({ email }, process.env.JWT_SECRET_KEY, {
 		expiresIn: "7d",
 	})
@@ -48,7 +48,7 @@ const runMongo = async () => {
 		// get post and search post
 		app.get("/posts", async (req, res) => {
 			const query = req?.query?.filter || {}
-			const cursor = postCollection.find(query)
+			const cursor = postCollection.find(query).sort({ _id: -1 })
 			const result = await cursor.toArray()
 			res.send(result)
 		})
@@ -58,16 +58,31 @@ const runMongo = async () => {
 		app.post("/post", verifyToken, async (req, res) => {
 			const body = req.body
 			const tokenEmail = req.tokenEmail
-            const document = {
-                ...body
-            }
-            console.log(document);
+			const document = {
+				...body,
+			}
 			if (body.author === tokenEmail) {
-                const result = await postCollection.insertOne(document)
-                console.log(result);
-				res.send({ message: "success", inserted: true, insertedId : result.insertedId })
+				const result = await postCollection.insertOne(document)
+				res.send({
+					message: "success",
+					inserted: true,
+					insertedId: result.insertedId,
+				})
 			} else {
 				res.status(403).send({ message: "authorization failed" })
+			}
+		})
+		// get user posts
+		app.get("/userPost", verifyToken, async (req, res) => {
+			const email = req.headers.email
+			const tokenEmail = req.tokenEmail
+			if (email === tokenEmail) {
+				const query = { author: email }
+				const cursor = postCollection.find(query).sort({ _id: -1 })
+				const result = await cursor.toArray()
+				res.send(result)
+			} else {
+				res.status(404).send("forbidden")
 			}
 		})
 	} finally {
