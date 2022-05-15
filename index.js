@@ -38,7 +38,7 @@ const runMongo = async () => {
 		const postCollection = client.db("Blog_post").collection("post")
 		const userCollection = client.db("Blog_post").collection("user")
 		const commentCollection = client.db("Blog_post").collection("comment")
-		app.post("/getToken", (req, res) => {
+		app.post("/getToken", async (req, res) => {
 			const email = req.body.email
 
 			const options = { update: true }
