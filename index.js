@@ -39,7 +39,12 @@ const runMongo = async () => {
 		const userCollection = client.db("Blog_post").collection("user")
 		const commentCollection = client.db("Blog_post").collection("comment")
 
-		app.post("/user", async (req, res) => {
+		app.post("/getToken", async (req, res) => {
+			const email = req.body.email
+
+			const token = jwt.sign({ email }, process.env.JWT_SECRET_KEY, {
+				expiresIn: "7d",
+			})
 			const filter = { email: req.body.email }
 
 			const options = { upsert: true }
@@ -49,16 +54,7 @@ const runMongo = async () => {
 				},
 			}
 			const result = await userCollection.updateOne(filter, updatedDoc, options)
-			res.send(result)
-		})
-
-		app.post("/getToken", async (req, res) => {
-			const email = req.body.email
-
-			const token = jwt.sign({ email }, process.env.JWT_SECRET_KEY, {
-				expiresIn: "7d",
-			})
-			res.send({ token })
+			res.send({ token , result })
 		})
 		// get post and search post
 		app.get("/posts", async (req, res) => {
