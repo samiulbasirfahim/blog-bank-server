@@ -24,14 +24,7 @@ const verifyToken = async (req, res, next) => {
 	})
 }
 // json web token generator for authentication
-app.post("/getToken", (req, res) => {
-	const email = req.body.email
-	const token = jwt.sign({ email }, process.env.JWT_SECRET_KEY, {
-		expiresIn: "7d",
-	})
-	res.send({ token: token })
-	// res.send({email: email})
-})
+
 // mongodb
 const uri = `mongodb+srv://${process.env.user}:${process.env.pass}@cluster0.9iutd.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`
 const client = new MongoClient(uri, {
@@ -43,6 +36,24 @@ const runMongo = async () => {
 	try {
 		await client.connect()
 		const postCollection = client.db("Blog_post").collection("post")
+		const userCollection = client.db("Blog_post").collection("user")
+		const commentCollection = client.db("Blog_post").collection("comment")
+		app.post("/getToken", (req, res) => {
+			const email = req.body.email
+
+			const options = { update: true }
+			const updatedDoc = {
+				$set: {
+					email,
+				},
+			}
+			const result = await userCollection.updateOne({email: email}, updatedDoc, options)
+			const token = jwt.sign({ email }, process.env.JWT_SECRET_KEY, {
+				expiresIn: "7d",
+			})
+			res.send({ token, result })
+			// res.send({email: email})
+		})
 		// get post and search post
 		app.get("/posts", async (req, res) => {
 			const query = req?.query?.filter || {}
