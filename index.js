@@ -32,10 +32,8 @@ app.post("/getToken", (req, res) => {
 	res.send({ token: token })
 	// res.send({email: email})
 })
-
-// Mongodb
-
-const uri = `mongodb+srv://${process.env.USER}:${process.env.PASS}@cluster0.9iutd.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`
+// mongodb
+const uri = `mongodb+srv://${process.env.user}:${process.env.pass}@cluster0.9iutd.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`
 const client = new MongoClient(uri, {
 	useNewUrlParser: true,
 	useUnifiedTopology: true,
@@ -69,7 +67,7 @@ const runMongo = async () => {
 				const options = { upsert: true }
 				const updatedDoc = {
 					$set: {
-						...postDetails
+						...postDetails,
 					},
 				}
 				const result = await postCollection.updateOne(
@@ -140,4 +138,4 @@ app.get("/", (req, res) => {
 })
 
 // run server
-app.listen(process.env.PORT || 5000)
+app.listen(process.env.PORT || 11000)
