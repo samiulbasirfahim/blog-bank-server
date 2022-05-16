@@ -38,16 +38,45 @@ const runMongo = async () => {
 		const postCollection = client.db("Blog_post").collection("post")
 		const userCollection = client.db("Blog_post").collection("user")
 		const commentCollection = client.db("Blog_post").collection("comment")
+		const notificationCollection = client
+			.db("Blog_post")
+			.collection("notification")
 
 		app.post("/comment", verifyToken, async (req, res) => {
-			console.log(req.body)
+			const notificationForDuplicate = []
+			const notificationForP = await postCollection.findOne({
+				_id: ObjectId(req.body.postId),
+			})
+			const notificationForC = await commentCollection
+				.find({ postId: req.body.postId })
+				.toArray()
+			const notificationForCommentAuthor = notificationForC.map(
+				(commentAuthor) => commentAuthor.userEmail
+			)
+			notificationForDuplicate.push(notificationForP.author)
+			notificationForDuplicate.push(...notificationForCommentAuthor)
+			const notificationFor = [...new Set(notificationForDuplicate)]
+			notificationFor.forEach(async (n) => {
+				const notificationInfo = {
+					for: n,
+					postId: req.body.postId,
+					title: `${req.body.userName} commented on ${notificationForP.postTitle}`,
+					detail: `comment: ${req.body.comment}`,
+					time: req.body.time,
+				}
+				await notificationCollection.insertOne(notificationInfo)
+			})
 			res.send(await commentCollection.insertOne(req.body))
 		})
 
 		app.get("/comment/:postId", async (req, res) => {
-			res.send(await commentCollection.find({postId: req.params.postId}).sort({_id: -1}).toArray())  
+			res.send(
+				await commentCollection
+					.find({ postId: req.params.postId })
+					.sort({ _id: -1 })
+					.toArray()
+			)
 		})
-
 
 		app.post("/getToken", async (req, res) => {
 			const email = req.body.email
@@ -165,4 +194,4 @@ app.get("/", (req, res) => {
 })
 
 // run server
-app.listen(process.env.PORT || 4000)
+app.listen(process.env.PORT || 5000)
