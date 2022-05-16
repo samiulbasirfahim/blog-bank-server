@@ -39,6 +39,10 @@ const runMongo = async () => {
 		const userCollection = client.db("Blog_post").collection("user")
 		const commentCollection = client.db("Blog_post").collection("comment")
 
+		app.post("/comment", verifyToken, async (req, res) => {
+			res.send(await commentCollection.insertOne(req.body))
+		})
+
 		app.post("/getToken", async (req, res) => {
 			const email = req.body.email
 
@@ -53,8 +57,12 @@ const runMongo = async () => {
 					email,
 				},
 			}
-			const result = await userCollection.updateOne(filter, updatedDoc, options)
-			res.send({ token , result })
+			const result = await userCollection.updateOne(
+				filter,
+				updatedDoc,
+				options
+			)
+			res.send({ token, result })
 		})
 		// get post and search post
 		app.get("/posts", async (req, res) => {
@@ -151,4 +159,4 @@ app.get("/", (req, res) => {
 })
 
 // run server
-app.listen(process.env.PORT || 11000)
+app.listen(process.env.PORT || 4000)
