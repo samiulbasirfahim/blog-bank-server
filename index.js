@@ -40,8 +40,14 @@ const runMongo = async () => {
 		const commentCollection = client.db("Blog_post").collection("comment")
 
 		app.post("/comment", verifyToken, async (req, res) => {
+			console.log(req.body)
 			res.send(await commentCollection.insertOne(req.body))
 		})
+
+		app.get("/comment/:postId", async (req, res) => {
+			res.send(await commentCollection.find({postId: req.params.postId}).toArray())  
+		})
+
 
 		app.post("/getToken", async (req, res) => {
 			const email = req.body.email
