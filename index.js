@@ -45,7 +45,7 @@ const runMongo = async () => {
 		})
 
 		app.get("/comment/:postId", async (req, res) => {
-			res.send(await commentCollection.find({postId: req.params.postId}).toArray())  
+			res.send(await commentCollection.find({postId: req.params.postId}).sort({_id: -1}).toArray())  
 		})
 
 
