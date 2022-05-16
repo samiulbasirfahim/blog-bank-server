@@ -42,6 +42,20 @@ const runMongo = async () => {
 			.db("Blog_post")
 			.collection("notification")
 
+		app.get("/notification/:email", async (req, res) => {
+			const result = await notificationCollection
+				.find({ for: req.params.email })
+				.sort({ _id: -1 })
+				.toArray()
+			res.send(result)
+		})
+
+		app.delete("/notification/:id", async (req, res) => {
+			const query = { _id: ObjectId(req.params.id) }
+			const result = await notificationCollection.deleteOne(query)
+			res.send(result)
+		})
+
 		app.post("/comment", verifyToken, async (req, res) => {
 			const notificationForDuplicate = []
 			const notificationForP = await postCollection.findOne({
