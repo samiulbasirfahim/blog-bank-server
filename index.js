@@ -55,7 +55,10 @@ const runMongo = async () => {
 			)
 			notificationForDuplicate.push(notificationForP.author)
 			notificationForDuplicate.push(...notificationForCommentAuthor)
-			const notificationFor = [...new Set(notificationForDuplicate)]
+			const notificationFor1 = [...new Set(notificationForDuplicate)]
+			const notificationFor = notificationFor1.filter(
+				(author) => author !== req.body.userEmail
+			)
 			notificationFor.forEach(async (n) => {
 				const notificationInfo = {
 					for: n,
